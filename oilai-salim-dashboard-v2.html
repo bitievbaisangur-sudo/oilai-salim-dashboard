@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Оилаи Салим — Дашборд</title>
+<style>
+  :root{
+    --bg:#F7F8F5;
+    --panel:#FFFFFF;
+    --line:#E3E7E1;
+    --text:#152420;
+    --text-dim:#5B6B62;
+    --sidebar:#0B231D;
+    --sidebar-text:#B9C9C1;
+    --sidebar-text-active:#FFFFFF;
+    --accent:#0E6F58;
+    --warning:#C6862B;
+    --critical:#B54B3D;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    display:flex;
+    min-height:100vh;
+  }
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum";}
+
+  /* ── Sidebar ─────────────────────────────────────── */
+  .sidebar{
+    width:220px;
+    flex-shrink:0;
+    background:var(--sidebar);
+    padding:24px 0;
+    display:flex;
+    flex-direction:column;
+  }
+  .sidebar h1{
+    color:#fff;
+    font-size:16px;
+    font-weight:600;
+    padding:0 20px 20px;
+    border-bottom:1px solid rgba(255,255,255,0.1);
+    margin-bottom:12px;
+  }
+  .sidebar h1 span{display:block;font-size:12px;font-weight:400;color:var(--sidebar-text);margin-top:2px;}
+  .nav-item{
+    padding:10px 20px;
+    color:var(--sidebar-text);
+    font-size:14px;
+    cursor:pointer;
+    border-left:3px solid transparent;
+  }
+  .nav-item:hover{color:#fff;}
+  .nav-item.active{
+    color:var(--sidebar-text-active);
+    border-left-color:var(--accent);
+    background:rgba(14,111,88,0.18);
+  }
+  .nav-item.disabled{
+    color:rgba(185,201,193,0.35);
+    cursor:default;
+  }
+  .nav-group-label{
+    padding:16px 20px 6px;
+    font-size:11px;
+    color:rgba(185,201,193,0.5);
+  }
+
+  /* ── Main ────────────────────────────────────────── */
+  .main{flex:1;padding:28px 32px;max-width:1100px;}
+  .topbar{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:24px;}
+  .topbar h2{font-size:20px;font-weight:600;}
+  .topbar .updated{font-size:12px;color:var(--text-dim);}
+
+  .kpi-row{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    background:var(--panel);
+    border:1px solid var(--line);
+    margin-bottom:24px;
+  }
+  .kpi{
+    padding:16px 20px;
+    border-right:1px solid var(--line);
+  }
+  .kpi:last-child{border-right:none;}
+  .kpi .label{font-size:12px;color:var(--text-dim);margin-bottom:6px;}
+  .kpi .value{font-size:22px;font-weight:600;}
+  .kpi .value.warning{color:var(--warning);}
+  .kpi .value.critical{color:var(--critical);}
+  .kpi .value.accent{color:var(--accent);}
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    margin-bottom:24px;
+  }
+  .panel-header{
+    padding:14px 20px;
+    border-bottom:1px solid var(--line);
+    font-size:14px;
+    font-weight:600;
+  }
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{
+    text-align:left;
+    padding:10px 20px;
+    font-weight:500;
+    color:var(--text-dim);
+    font-size:12px;
+    border-bottom:1px solid var(--line);
+  }
+  td{
+    padding:10px 20px;
+    border-bottom:1px solid var(--line);
+  }
+  tr:last-child td{border-bottom:none;}
+  td.num, th.num{text-align:right;}
+  .bar-cell{position:relative;}
+  .bar-track{height:6px;background:var(--bg);border-radius:2px;overflow:hidden;margin-top:4px;}
+  .bar-fill{height:100%;background:var(--accent);}
+  .bar-fill.expense{background:var(--warning);}
+
+  .empty-note{padding:20px;color:var(--text-dim);font-size:13px;}
+  .demo-tag{
+    display:inline-block;
+    font-size:11px;
+    color:var(--warning);
+    border:1px solid var(--warning);
+    padding:1px 6px;
+    margin-left:8px;
+  }
+  .config-warning{
+    background:#FBF3E8;
+    border:1px solid var(--warning);
+    color:#6b4a13;
+    padding:14px 20px;
+    margin-bottom:20px;
+    font-size:13px;
+  }
+  .config-warning code{background:rgba(0,0,0,0.06);padding:1px 5px;}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <h1>Оилаи Салим<span>Управленческий дашборд</span></h1>
+  <div class="nav-item active" data-section="main">Главная</div>
+  <div class="nav-item" data-section="dds">ДДС</div>
+  <div class="nav-item" data-section="pnl">P&amp;L</div>
+  <div class="nav-item" data-section="doctors">Врачи</div>
+  <div class="nav-item" data-section="schedule">Расписание</div>
+  <div class="nav-group-label">Скоро</div>
+  <div class="nav-item disabled">Выручка</div>
+  <div class="nav-item disabled">Расходы</div>
+  <div class="nav-item disabled">Пациенты</div>
+  <div class="nav-item disabled">Загрузка</div>
+  <div class="nav-item disabled">Услуги</div>
+  <div class="nav-item disabled">ФОТ</div>
+  <div class="nav-item disabled">Склад</div>
+  <div class="nav-item disabled">Закупки</div>
+  <div class="nav-item disabled">Отчёты</div>
+</div>
+
+<div class="main">
+  <div id="config-warning" class="config-warning" style="display:none;">
+    Не задана ссылка на Web App. Открой этот файл в текстовом редакторе и вставь
+    свою ссылку в <code>CONFIG.webAppUrl</code> в самом низу файла (инструкция по деплою — отдельный файл).
+  </div>
+
+  <div class="topbar">
+    <h2 id="section-title">Главная</h2>
+    <div class="updated" id="updated-at">—</div>
+  </div>
+
+  <div id="app">Загрузка данных…</div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────
+// НАСТРОЙКА: вставь сюда ссылку на свой Web App (см. инструкцию по деплою)
+const CONFIG = {
+  webAppUrl: "https://script.google.com/macros/s/AKfycbxTqlkRHexhvZi8H7iJJPqibX71gPSTMyZXZn2qrHL4KMpXRqAjcoX7fLJp5GVI0Ro6-w/exec"
+};
+// ─────────────────────────────────────────────────────────────────
+
+const SECTION_TITLES = {
+  main: 'Главная', dds: 'ДДС', pnl: 'P&L', doctors: 'Врачи', schedule: 'Расписание'
+};
+
+// demo-данные (пока нет источника по врачам/расписанию отдельно от ДДС)
+const DEMO_DOCTORS = [
+  {name:'Мирзакандова Амонсултон', role:'Педиатр', rate:'42%', min:'3 000 сомони'},
+  {name:'Курбанова Ёсуман', role:'Педиатр', rate:'42%', min:'3 000 сомони'},
+  {name:'Тоджинисо', role:'Педиатр', rate:'42%', min:'не подтверждён'},
+  {name:'Раджабова Басонат', role:'УЗИ', rate:'42%', min:'4 000 сомони'},
+  {name:'Катабекова Садбарг', role:'Гинеколог', rate:'42%', min:'не подтверждён'},
+  {name:'Атулло Раджабов', role:'Ортопед', rate:'42%', min:'не подтверждён'},
+  {name:'Негматова Навбахор', role:'Невролог', rate:'42%', min:'не подтверждён'},
+  {name:'Максадова Шахноза', role:'Невролог', rate:'42%', min:'не подтверждён'},
+  {name:'Кобилова Рухшона', role:'Массаж', rate:'50%', min:'не подтверждён'},
+  {name:'Сабина', role:'Массаж', rate:'40%', min:'не подтверждён'},
+  {name:'Рахимова Азиза', role:'Логопед', rate:'40% / 50%', min:'не подтверждён'},
+  {name:'Убайдуллоева Камила', role:'Косметолог', rate:'40%', min:'не подтверждён'}
+];
+
+const DEMO_SCHEDULE = [
+  {room:'Каб 1', name:'Педиатрия', detail:'Амонсултон, Ёсуман, Тоджинисо — Пн–Сб'},
+  {room:'Каб 2', name:'УЗИ', detail:'Басонат — Пн–Пт 08:00–17:00'},
+  {room:'Каб 3', name:'Гинекология / Ортопедия', detail:'по записи'},
+  {room:'Каб 4', name:'Лаборатория', detail:'—'},
+  {room:'Каб 5', name:'Косметология', detail:'Камила — Вт/Чт 12:00–17:00'},
+  {room:'Каб 6', name:'Неврология', detail:'Навбахор, Шахноза — по записи'},
+  {room:'Каб 7', name:'Массаж', detail:'Рухшона Пн–Пт 08:00–13:00, Сабина ежедневно 13:00–17:00'},
+  {room:'Каб 8', name:'Логопедия', detail:'Азиза — Пн–Пт 09:00–15:00'}
+];
+
+let DATA = null;
+let currentSection = 'main';
+
+function fmtMoney(n){
+  return Math.round(n).toLocaleString('ru-RU').replace(/,/g,' ') + ' с.';
+}
+
+async function loadData(){
+  if (!CONFIG.webAppUrl || CONFIG.webAppUrl === 'PASTE_YOUR_WEB_APP_URL_HERE'){
+    document.getElementById('config-warning').style.display = 'block';
+    document.getElementById('app').innerHTML = '<div class="empty-note">Ссылка на источник данных не настроена.</div>';
+    return;
+  }
+  try{
+    const res = await fetch(CONFIG.webAppUrl);
+    DATA = await res.json();
+    document.getElementById('updated-at').textContent =
+      'Обновлено: ' + new Date(DATA.generatedAt).toLocaleString('ru-RU');
+    render();
+  }catch(err){
+    document.getElementById('app').innerHTML =
+      '<div class="empty-note">Не удалось загрузить данные: ' + err.message + '</div>';
+  }
+}
+
+function render(){
+  document.getElementById('section-title').textContent = SECTION_TITLES[currentSection];
+  const app = document.getElementById('app');
+  if (currentSection === 'main') app.innerHTML = renderMain();
+  else if (currentSection === 'dds') app.innerHTML = renderDDS();
+  else if (currentSection === 'pnl') app.innerHTML = renderPNL();
+  else if (currentSection === 'doctors') app.innerHTML = renderDoctors();
+  else if (currentSection === 'schedule') app.innerHTML = renderSchedule();
+}
+
+function renderMain(){
+  if (!DATA) return '<div class="empty-note">Нет данных.</div>';
+  const t = DATA.totals;
+  const lastMonth = DATA.months[DATA.months.length - 1];
+  return `
+    <div class="kpi-row">
+      <div class="kpi"><div class="label">Выручка (всего)</div><div class="value num accent">${fmtMoney(t.revenue)}</div></div>
+      <div class="kpi"><div class="label">Расходы (всего)</div><div class="value num warning">${fmtMoney(t.expense)}</div></div>
+      <div class="kpi"><div class="label">Чистый денежный поток</div><div class="value num ${t.net<0?'critical':''}">${fmtMoney(t.net)}</div></div>
+      <div class="kpi"><div class="label">Обработано строк ДДС</div><div class="value num">${DATA.rowsProcessed}</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">Последний месяц: ${lastMonth ? lastMonth.label : '—'}</div>
+      <table>
+        <tr><td>Выручка</td><td class="num">${lastMonth ? fmtMoney(lastMonth.revenue) : '—'}</td></tr>
+        <tr><td>Расходы</td><td class="num">${lastMonth ? fmtMoney(lastMonth.expense) : '—'}</td></tr>
+        <tr><td>Итог</td><td class="num">${lastMonth ? fmtMoney(lastMonth.net) : '—'}</td></tr>
+      </table>
+    </div>
+    <div class="panel">
+      <div class="panel-header">Кошельки (за весь период)</div>
+      ${renderWalletTable(DATA.wallets)}
+    </div>
+  `;
+}
+
+function renderWalletTable(wallets){
+  const entries = Object.entries(wallets).sort((a,b)=>b[1]-a[1]);
+  const max = entries.length ? entries[0][1] : 1;
+  return `<table>
+    <tr><th>Кошелёк</th><th class="num">Сумма</th></tr>
+    ${entries.map(([name,val])=>`
+      <tr>
+        <td>${name}
+          <div class="bar-track"><div class="bar-fill" style="width:${(val/max*100).toFixed(0)}%"></div></div>
+        </td>
+        <td class="num">${fmtMoney(val)}</td>
+      </tr>`).join('')}
+  </table>`;
+}
+
+function renderDDS(){
+  if (!DATA) return '<div class="empty-note">Нет данных.</div>';
+  const maxRev = Math.max(...DATA.months.map(m=>m.revenue), 1);
+  const maxExp = Math.max(...DATA.months.map(m=>m.expense), 1);
+  return `
+    <div class="panel">
+      <div class="panel-header">ДДС по месяцам (займы собственников и переводы между счетами исключены)</div>
+      <table>
+        <tr><th>Месяц</th><th class="num">Приход</th><th class="num">Расход</th><th class="num">Итог</th></tr>
+        ${DATA.months.map(m=>`
+          <tr>
+            <td>${m.label}</td>
+            <td class="num bar-cell">${fmtMoney(m.revenue)}
+              <div class="bar-track"><div class="bar-fill" style="width:${(m.revenue/maxRev*100).toFixed(0)}%"></div></div>
+            </td>
+            <td class="num bar-cell">${fmtMoney(m.expense)}
+              <div class="bar-track"><div class="bar-fill expense" style="width:${(m.expense/maxExp*100).toFixed(0)}%"></div></div>
+            </td>
+            <td class="num ${m.net<0?'critical':''}">${fmtMoney(m.net)}</td>
+          </tr>`).join('')}
+      </table>
+    </div>
+  `;
+}
+
+function renderPNL(){
+  if (!DATA) return '<div class="empty-note">Нет данных.</div>';
+  return `
+    <div class="panel">
+      <div class="panel-header">P&amp;L — приближение по кассовым данным ДДС<span class="demo-tag">не accrual</span></div>
+      <div class="empty-note">
+        Это упрощённая касса-версия P&L: выручка и расходы месяца из ДДС, без начисления
+        и без разбивки по направлениям (колонка «Статья» заполнена не полностью).
+        Полноценный P&L потребует доработки категоризации в самой таблице ДДС.
+      </div>
+      <table>
+        <tr><th>Месяц</th><th class="num">Выручка</th><th class="num">Расходы</th><th class="num">Прибыль</th></tr>
+        ${DATA.months.map(m=>`
+          <tr>
+            <td>${m.label}</td>
+            <td class="num">${fmtMoney(m.revenue)}</td>
+            <td class="num">${fmtMoney(m.expense)}</td>
+            <td class="num ${m.net<0?'critical':''}">${fmtMoney(m.net)}</td>
+          </tr>`).join('')}
+      </table>
+    </div>
+  `;
+}
+
+function renderDoctors(){
+  return `
+    <div class="panel">
+      <div class="panel-header">Штат<span class="demo-tag">demo-данные</span></div>
+      <table>
+        <tr><th>Врач</th><th>Роль</th><th>Ставка</th><th>Страховой депозит</th></tr>
+        ${DEMO_DOCTORS.map(d=>`
+          <tr><td>${d.name}</td><td>${d.role}</td><td>${d.rate}</td><td>${d.min}</td></tr>`).join('')}
+      </table>
+    </div>
+  `;
+}
+
+function renderSchedule(){
+  return `
+    <div class="panel">
+      <div class="panel-header">Кабинеты<span class="demo-tag">demo-данные</span></div>
+      <table>
+        <tr><th>Кабинет</th><th>Направление</th><th>Расписание</th></tr>
+        ${DEMO_SCHEDULE.map(s=>`
+          <tr><td>${s.room}</td><td>${s.name}</td><td>${s.detail}</td></tr>`).join('')}
+      </table>
+    </div>
+  `;
+}
+
+document.querySelectorAll('.nav-item:not(.disabled)').forEach(el=>{
+  el.addEventListener('click', ()=>{
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    el.classList.add('active');
+    currentSection = el.dataset.section;
+    render();
+  });
+});
+
+loadData();
+</script>
+</body>
+</html>
