@@ -175,8 +175,11 @@
   .sidebar-overlay.open{display:block;}
 
   /* ── Таблицы: не даём им ломать узкий экран ───────── */
-  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  .table-scroll table{min-width:480px;}
+  html, body{max-width:100%;overflow-x:hidden;}
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;}
+  .table-scroll table{width:100%;}
+  /* только у широких таблиц (4 колонки + полоски) принудительная ширина со скроллом */
+  .table-scroll.wide table{min-width:480px;width:auto;}
 
   @media (max-width: 820px){
     body{flex-direction:column;}
@@ -364,7 +367,7 @@ function renderDDS(){
   return `
     <div class="panel">
       <div class="panel-header">ДДС по месяцам (займы собственников и переводы между счетами исключены)</div>
-      <div class="table-scroll"><table>
+      <div class="table-scroll wide"><table>
         <tr><th>Месяц</th><th class="num">Приход</th><th class="num">Расход</th><th class="num">Итог</th></tr>
         ${DATA.months.map(m=>`
           <tr>
@@ -392,7 +395,7 @@ function renderPNL(){
         и без разбивки по направлениям (колонка «Статья» заполнена не полностью).
         Полноценный P&L потребует доработки категоризации в самой таблице ДДС.
       </div>
-      <div class="table-scroll"><table>
+      <div class="table-scroll wide"><table>
         <tr><th>Месяц</th><th class="num">Выручка</th><th class="num">Расходы</th><th class="num">Прибыль</th></tr>
         ${DATA.months.map(m=>`
           <tr>
